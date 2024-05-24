@@ -6,20 +6,27 @@ from tkinter import filedialog, messagebox
 
 only_dir = False
 only_file = False
+exclude = []
+delimiter = '  '  # 默认值为两个空格
 
 def sout_a(sout, s):
-    global only_file, only_dir
+    global only_file, only_dir, exclude, delimiter
     path = Path(sout)
     for item in path.iterdir():
+        if item.name in exclude:
+            continue
         if item.is_file() and not only_dir:
             print(f'{s}{item.name}')
         elif item.is_dir() and not only_file:
             print(f'{s}{item.name}')
-            sout_a(os.path.join(sout, item.name), '    ' + s)
+            sout_a(os.path.join(sout, item.name), delimiter + s)
 
 def run_sout_a():
+    global exclude, delimiter
     directory = entry_directory.get()
     prefix = entry_prefix.get()
+    exclude = [x.strip() for x in entry_exclude.get().split(',')]
+    delimiter = entry_delimiter.get() or '  '  # 如果用户未输入分隔符，则使用两个空格
 
     if not Path(directory).exists():
         messagebox.showerror("错误", "指定的目录不存在")
@@ -93,16 +100,25 @@ tk.Label(root, text="前缀字符串:").grid(row=1, column=0, padx=5, pady=5, st
 entry_prefix = tk.Entry(root, width=50)
 entry_prefix.grid(row=1, column=1, padx=5, pady=5)
 
+tk.Label(root, text="排除列表 (用逗号分隔):").grid(row=2, column=0, padx=5, pady=5, sticky='e')
+entry_exclude = tk.Entry(root, width=50)
+entry_exclude.grid(row=2, column=1, padx=5, pady=5)
+
+tk.Label(root, text="自定义分隔符:").grid(row=3, column=0, padx=5, pady=5, sticky='e')
+entry_delimiter = tk.Entry(root, width=50)
+entry_delimiter.grid(row=3, column=1, padx=5, pady=5)
+entry_delimiter.insert(0, '  ')  # 设置默认值为两个空格
+
 button_only_file = tk.Button(root, text="仅文件", command=toggle_only_file)
-button_only_file.grid(row=2, column=0, padx=5, pady=5)
+button_only_file.grid(row=4, column=0, padx=5, pady=5)
 
 button_only_dir = tk.Button(root, text="仅目录", command=toggle_only_dir)
-button_only_dir.grid(row=2, column=1, padx=5, pady=5)
+button_only_dir.grid(row=4, column=1, padx=5, pady=5)
 
-tk.Button(root, text="运行", command=run_sout_a).grid(row=2, column=2, pady=10)
+tk.Button(root, text="运行", command=run_sout_a).grid(row=4, column=2, pady=10)
 
 text_output = tk.Text(root, wrap=tk.NONE, width=80, height=20)
-text_output.grid(row=3, column=0, columnspan=3, padx=5, pady=5)
+text_output.grid(row=5, column=0, columnspan=3, padx=5, pady=5)
 
 update_button_states()
 
